@@ -8,8 +8,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import h5py
 
+from visualize import *
+
+
 R = 5;
 
+# --------------- --------- data loading ---------------------------
 data_path = "/hd2/research/brain/time_series/my_SRSCPD_ALS/data.mat"
 with h5py.File(data_path, 'r') as file:
     X_ref = file['data'][0, 0]
@@ -20,12 +24,23 @@ with h5py.File(data_path, 'r') as file:
     X = np.array(file[X_ref]).T
     Xn = np.array(file[Xn_ref]).T
 
-    xAxis = file[xAxis_ref]
-    t = np.array(file[xAxis[1, 0]]).T
-    freq = np.array(file[xAxis[2, 0]]).T
+    UGT = file[UGT_ref]
+    UGT_dict = {}
+    UGT_dict['Channel'] = np.array(file[UGT[0, 0]]).T
+    UGT_dict['Time'] = np.array(file[UGT[1, 0]]).T
+    UGT_dict['Spectrum'] = np.array(file[UGT[2, 0]]).T
 
-print(t.shape)
-print(freq.shape)
+    xAxis = file[xAxis_ref]
+    xAxis_dict = {}
+    xAxis_dict['t'] = np.array(file[xAxis[1, 0]]).T
+    xAxis_dict['freq'] = np.array(file[xAxis[2, 0]]).T
+
+# print(UGT_dict['Channel'].shape)
+# print(UGT_dict['Time'].shape)
+# print(UGT_dict['Spectrum'].shape)
+
+print(xAxis_dict['t'].shape)
+plotTensorComponents(UGT_dict, xAxis_dict, "")
 
 # plt.imshow(Xn, cmap="gray")
 # plt.axis('off')
