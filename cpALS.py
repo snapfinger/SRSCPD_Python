@@ -1,7 +1,18 @@
 import numpy as np
 
 
-def cpALS(TS, R, option={}):
+def cpALS(TS=None, R=None, option={}):
+    """
+    Alternating least sqaure (ALS) algorithm for CP decomposition
+
+    params:
+        TS (numpy array): N-way tensor
+        R (int): desired rank
+        option (dictionary): contains more settings
+
+    return:
+        TODO
+    """
     if not option:
         option['init'] = 'random'
         option['firstItrDims'] = []
@@ -26,6 +37,7 @@ def cpALS(TS, R, option={}):
         # settings for TFOCS
         option['epsHuber'] = 1e-3
 
+        optTFOCS = {}
         optTFOCS['tol'] = 1e-6
         optTFOCS['restart'] = 5
         optTFOCS['maxIts'] = 100
@@ -36,6 +48,8 @@ def cpALS(TS, R, option={}):
 
         lamb = []
         output = []
+
+    return option
 
     # get dimensions for init
     sz = TS.shape
@@ -66,6 +80,5 @@ def cpALS(TS, R, option={}):
     # for m in range(maxNumItr):
 
 
-a = np.ones((3, 2))
-res = cpALS(a, 3)
+res = cpALS()
 print(res)
