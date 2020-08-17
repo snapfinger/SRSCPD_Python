@@ -16,12 +16,17 @@ def cpALS(TS=None, R=None, option={}):
     if not option:
         option['init'] = 'random'
         option['firstItrDims'] = []
+        # the overall iterating dimensions
+        # (fixed dimensions should be the complement of this set from the whole set 0:N-1)
         option['itrDims'] = []
+        # convergence criterion
         option['tol'] = 1e-5
         option['maxNumItr'] = 100
         # whether to cache the matricized tensor or not
         # caching will speed up the computation but require more memory
         option['cacheMTS'] = True
+        # constrained dim
+        # 0: no constraint, 1: smoothness, 2:sparseness, 3: TV
         option['const'] = []
         # regularization params for each dim
         option['regParam'] = []
@@ -61,8 +66,6 @@ def cpALS(TS=None, R=None, option={}):
     for m in range(N):
         UInit[m] = np.random.rand(TS.shape[m], R)
 
-    return UInit
-
     if option['cacheMTS']:
         MTS = [[] for i in range(N)]
         for m in range(N):
@@ -70,14 +73,64 @@ def cpALS(TS=None, R=None, option={}):
     else:
         MTS = []
 
+    if not option['firstItrDims']:
+        firstItrDims = np.arange(N)
+    else:
+        firstItrDims = option['firstItrDims']
 
-    # # init params
-    # maxNumItr = option['maxNumItr']
-    # epsHuber = option['epsHuber']
-    # printItv = option['printItv']
-    #
-    # # start ALS
-    # for m in range(maxNumItr):
+    if not option['itrDims']:
+        itrDims = np.arange(N)
+    else:
+        itrDims = option['itrDims']
+
+    if not option['const']:
+        option['const'] = np.zeros((N, 1))
+    else:
+        if len(option['const']) != N:
+            raise ValueError("regularization type dimension mismatches the data")
+
+    if not option['regParam']:
+        option['regParam'] = np.zeros((N, 1))
+    else:
+        if len(option['regParam']) != N:
+            raise ValueError("regularization parameter dimension mismatches the data")
+
+    if not option['nonnegative']:
+        option['nonnegative'] = np.zeros((N, 1), dtype=bool)
+    else:
+        if len(option['nonnegative']) != N:
+            raise ValueError("nonnegativity constraint dimension mismatches the data")
+
+    # init params
+    maxNumItr = option['maxNumItr']
+    const = option['const']
+    mu = option['regParam']
+    epsHuber = option['epsHuber']
+
+    isCostFV = option['isCostFV']
+    isFC = option['isFC']
+    printItv = option['printItv']
+
+    # start ALS
+    U = UInit
+
+    if isCostFV: CostFV = np.zeros((maxNumItr, 1))
+    if isFC: FC = np.zeros((maxNumItr, 1))
+
+    V = np.zeros((R, R, N))
+    for m in range(N):
+        V[:, :, m] = np.matmul(np.array(U[m]).T, np.array(U[m]))
+
+    for m in range(maxNumItr):
+        UOld = U;
+
+        # iterate over modes specified for first iter
+        for n in firstItrDims:
+            idx = []
+
+
+
+
 
 
 res = cpALS()
