@@ -22,3 +22,30 @@ def matricize(X, n):
     Xn = np.reshape(Y, (Y.shape[0], -1), order='F')
 
     return Xn
+
+
+def KrProd(U):
+    """
+    Khatri-Rao product (N-dim supported)
+
+    params:
+        U (list of lists) the components
+
+    return:
+        KR:
+    """
+    N = len(U)
+    cols = np.zeros((N, 1))
+    for m in np.arange(N):
+        cols[m] = U[m].shape[1]
+
+    KR = U[0]
+    R = cols[0]
+
+    for m in np.arange(1, N):
+        KR =
+
+
+    KR = np.reshape(KR, (-1, R), order='F')
+
+    return KR
