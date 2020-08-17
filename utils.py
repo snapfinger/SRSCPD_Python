@@ -32,19 +32,22 @@ def KrProd(U):
         U (list of lists) the components
 
     return:
-        KR:
+        KR (numpy array): Khatri-Rao product
     """
     N = len(U)
     cols = np.zeros((N, 1))
     for m in np.arange(N):
-        cols[m] = U[m].shape[1]
+        cols[m] = np.array(U[m]).shape[1]
+
+    if not np.all(cols == cols[0]):
+        raise ValueError("number of columns does not match")
 
     KR = U[0]
-    R = cols[0]
+    R = int(cols[0])
 
     for m in np.arange(1, N):
-        KR =
-
+        # element-wise product between reshaped tensors
+        KR = np.multiply(np.reshape(U[m], (-1, 1, R)), np.reshape(KR, (1, -1, R)))
 
     KR = np.reshape(KR, (-1, R), order='F')
 
