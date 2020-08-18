@@ -166,17 +166,16 @@ def cpALS(TS=None, R=None, option={}):
         if (m > 2) and (facCvg < option['tol']):
             break
 
+        if printItv > 0:
+            if m == maxNumItr:
+                print("reached the max number of iterations")
+                print("eps = %.3f\n", facCvg)
 
+                # TODO: add dfFRo, EV
+                # print("f = %.3f, eps = %.3e  EV = %.2f\n", dfFro^2, facCvg, EV))
 
+        output = {}
+        output['Flag'] = True
+        output['numItr'] = m
 
-
-
-
-
-
-
-
-
-
-res = cpALS()
-print(res)
+    return U, lamb, output
