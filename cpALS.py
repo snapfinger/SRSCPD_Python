@@ -1,4 +1,6 @@
 import numpy as np
+import scipy
+from subprocess import call
 
 from utils import *
 
@@ -56,7 +58,7 @@ def cpALS(TS=None, R=None, option={}):
         lamb = []
         output = []
 
-    return option
+        return option
 
     # get dimensions for init
     sz = TS.shape
@@ -125,17 +127,24 @@ def cpALS(TS=None, R=None, option={}):
 
     for m in range(maxNumItr):
         UOld = U;
+        print("iter:",m)
 
         # iterate over modes specified for first iter
         for n in firstItrDims:
-            idx = np.concatenate((np.arange(0, n-1), np.arange(n+1, N)))
+            print("dim:", n)
+            idx = np.concatenate((np.arange(0, n), np.arange(n+1, N)))
+            print("idx:", idx)
 
             A = np.prod(V[:, :, idx], axis=2)
 
             if option['cacheMTS']:
-                B = np.matmul(MTS[n], KrProd([U[i] for i in a[::-1]])).T
+                cur_MTS = MTS[n]
+                cur_krprod = KrProd([U[i] for i in idx[::-1]])
+                print("cur_MTS", cur_MTS)
+                print("cur_krprod", cur_krprod)
+                B = np.matmul(MTS[n], KrProd([U[i] for i in idx[::-1]])).T
             else:
-                B = np.matmul(matricize(TS, n), KrProd([U[i] for i in a[::-1]])).T
+                B = np.matmul(matricize(TS, n), KrProd([U[i] for i in idx[::-1]])).T
 
             # TODO: no regularization options for now, include in the future
             A2 = nBlockDiag(A, sz[n])
@@ -143,9 +152,17 @@ def cpALS(TS=None, R=None, option={}):
             x0 = U[n].T
             x0 = np.reshape(x0, (x0.size, 1), order='F')
 
-            # TODO soon: load from disk the result from TFOCS
+            # TODO: now enforces nonnegativity,
+            # in the future includes the one w/o this constraint
+            scipy.io.savemat("var.mat", mdict={'A2': A2, 'B2':B2, 'x0':x0})
+            call(["matlab",  "-nodisplay", "-wait", "-r", "TFOCS_LS(); exit;"])
+            tfocs_res_mat = scipy.io.loadmat("tfocs_rst.mat")
+            X2 = tfocs_res_mat['X2']
+
             X = np.reshape(X2, (R, sz[n]))
             lamb = np.sqrt(np.diag(np.matmul(X, X.T)))
+            lamb = np.reshape(lamb, (lamb.shape[0], 1))
+            print(lamb, X)
             X = np.divide(X, lamb)
 
             U[n] = X.T
