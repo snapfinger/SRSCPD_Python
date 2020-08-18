@@ -1,5 +1,6 @@
 import numpy as np
 import scipy
+import copy
 from subprocess import call
 
 from utils import *
@@ -15,7 +16,9 @@ def cpALS(TS=None, R=None, option={}):
         option (dictionary): contains more settings
 
     return:
-        TODO
+        U (list of numpy arrays): the componetns
+        lambda (numpy array): scale corresponding to the components
+        output (dictionary): record of algo related info
     """
     if not option:
         option['init'] = 'random'
@@ -64,11 +67,15 @@ def cpALS(TS=None, R=None, option={}):
     sz = TS.shape
     N = TS.ndim
 
+    # to check with matlab version
+    np.random.seed(1337)
+
     # init set
     # TODO: add other choice of init (e.g. use SVD), now it's just random init
     UInit = [[] for i in range(N)]
     for m in range(N):
-        UInit[m] = np.random.rand(TS.shape[m], R)
+        # UInit[m] = np.random.rand(TS.shape[m], R)
+        UInit[m] = np.random.rand(R, TS.shape[m]).T # so to generate same random matrix as matlba
 
     if option['cacheMTS']:
         MTS = [[] for i in range(N)]
@@ -126,22 +133,17 @@ def cpALS(TS=None, R=None, option={}):
         V[:, :, m] = np.matmul(np.array(U[m]).T, np.array(U[m]))
 
     for m in range(maxNumItr):
-        UOld = U;
-        print("iter:",m)
+        UOld = copy.deepcopy(U);
 
         # iterate over modes specified for first iter
         for n in firstItrDims:
-            print("dim:", n)
             idx = np.concatenate((np.arange(0, n), np.arange(n+1, N)))
-            print("idx:", idx)
 
             A = np.prod(V[:, :, idx], axis=2)
 
             if option['cacheMTS']:
                 cur_MTS = MTS[n]
                 cur_krprod = KrProd([U[i] for i in idx[::-1]])
-                print("cur_MTS", cur_MTS)
-                print("cur_krprod", cur_krprod)
                 B = np.matmul(MTS[n], KrProd([U[i] for i in idx[::-1]])).T
             else:
                 B = np.matmul(matricize(TS, n), KrProd([U[i] for i in idx[::-1]])).T
@@ -155,21 +157,20 @@ def cpALS(TS=None, R=None, option={}):
             # TODO: now enforces nonnegativity,
             # in the future includes the one w/o this constraint
             scipy.io.savemat("var.mat", mdict={'A2': A2, 'B2':B2, 'x0':x0})
-            call(["matlab",  "-nodisplay", "-wait", "-r", "TFOCS_LS(); exit;"])
+            call(["matlab",  "-nodisplay", "-r", "TFOCS_LS(); exit;"])
             tfocs_res_mat = scipy.io.loadmat("tfocs_rst.mat")
             X2 = tfocs_res_mat['X2']
 
-            X = np.reshape(X2, (R, sz[n]))
+            X = np.reshape(X2, (R, sz[n]), order='F')
             lamb = np.sqrt(np.diag(np.matmul(X, X.T)))
-            lamb = np.reshape(lamb, (lamb.shape[0], 1))
-            print(lamb, X)
+            lamb = np.reshape(lamb, (lamb.shape[0], 1), order='F')
             X = np.divide(X, lamb)
 
             U[n] = X.T
             V[:, :, n] = np.matmul(X, X.T)
 
         # check factor convergence (abs diff per element)
-        facCvg, numE = 0, 0
+        facCvg, numE = 0.0, 0.0
         for n in range(N):
             facCvg += np.sum(np.abs(U[n] - UOld[n]))
             numE += U[n].size
@@ -178,21 +179,21 @@ def cpALS(TS=None, R=None, option={}):
         if isFC: FC[m] = facCvg
 
         if printItv and ((m <= 5) or (m % printItv == 0)):
-            print("%d: eps = %.3f\n" % (m, facCvg))
+            print("Iter%d: eps = %.3e\n" % (m, facCvg))
 
         if (m > 2) and (facCvg < option['tol']):
             break
 
-        if printItv > 0:
-            if m == maxNumItr:
-                print("reached the max number of iterations")
-                print("eps = %.3f\n", facCvg)
+    if printItv > 0:
+        if m == maxNumItr:
+            print("reached the max number of iterations")
+            print("eps = %.3e\n", facCvg)
 
-                # TODO: add dfFRo, EV
-                # print("f = %.3f, eps = %.3e  EV = %.2f\n", dfFro^2, facCvg, EV))
+            # TODO: add dfFRo, EV
+            # print("f = %.3f, eps = %.3e  EV = %.2f\n", dfFro^2, facCvg, EV))
 
-        output = {}
-        output['Flag'] = True
-        output['numItr'] = m
+    output = {}
+    output['Flag'] = True
+    output['numItr'] = m + 1
 
     return U, lamb, output

@@ -29,7 +29,7 @@ def KrProd(U):
     Khatri-Rao product (N-dim supported)
 
     params:
-        U (list of lists): the components
+        U (list of numpy arrays): the components
 
     return:
         KR (numpy array): Khatri-Rao product
