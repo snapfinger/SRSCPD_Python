@@ -1,5 +1,7 @@
 import numpy as np
 
+from utils import *
+
 
 def cpALS(TS=None, R=None, option={}):
     """
@@ -126,7 +128,50 @@ def cpALS(TS=None, R=None, option={}):
 
         # iterate over modes specified for first iter
         for n in firstItrDims:
-            idx = []
+            idx = np.concatenate((np.arange(0, n-1), np.arange(n+1, N)))
+
+            A = np.prod(V[:, :, idx], axis=2)
+
+            if option['cacheMTS']:
+                B = np.matmul(MTS[n], KrProd([U[i] for i in a[::-1]])).T
+            else:
+                B = np.matmul(matricize(TS, n), KrProd([U[i] for i in a[::-1]])).T
+
+            # TODO: no regularization options for now, include in the future
+            A2 = nBlockDiag(A, sz[n])
+            B2 = np.reshape(B, (B.size, 1), order='F')
+            x0 = U[n].T
+            x0 = np.reshape(x0, (x0.size, 1), order='F')
+
+            # TODO soon: load from disk the result from TFOCS
+            X = np.reshape(X2, (R, sz[n]))
+            lamb = np.sqrt(np.diag(np.matmul(X, X.T)))
+            X = np.divide(X, lamb)
+
+            U[n] = X.T
+            V[:, :, n] = np.matmul(X, X.T)
+
+        # check factor convergence (abs diff per element)
+        facCvg, numE = 0, 0
+        for n in range(N):
+            facCvg += np.sum(np.abs(U[n] - UOld[n]))
+            numE += U[n].size
+        facCvg /= float(numE)
+
+        if isFC: FC[m] = facCvg
+
+        if printItv and ((m <= 5) or (m % printItv == 0)):
+            print("%d: eps = %.3f\n" % (m, facCvg))
+
+        if (m > 2) and (facCvg < option['tol']):
+            break
+
+
+
+
+
+
+
 
 
 

@@ -70,15 +70,15 @@ def nBlockDiag(A, n):
     return np.kron(np.eye(n), A)
 
 
-# def linop_diff_h(sz):
-#     """
-#     construct a linear differential operator
-#
-#     params:
-#         sz (tuple): size of the matrix
-#
-#     return:
-#         op (): TODO
-#     """
-#     n1, n2 = sz[0], sz[1]
-#     mat =
+# TODO
+def linop_diff_h(sz):
+    """
+    construct a linear differential operator
+
+    params:
+        sz (tuple): size of the matrix
+
+    return:
+        op (): TODO
+    """
+    pass
