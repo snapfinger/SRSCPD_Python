@@ -29,7 +29,7 @@ def KrProd(U):
     Khatri-Rao product (N-dim supported)
 
     params:
-        U (list of lists) the components
+        U (list of lists): the components
 
     return:
         KR (numpy array): Khatri-Rao product
@@ -52,3 +52,33 @@ def KrProd(U):
     KR = np.reshape(KR, (-1, R), order='F')
 
     return KR
+
+
+# TODO: include option of using sparse matrix representation
+def nBlockDiag(A, n):
+    """
+    Construct block diagonal matrix
+
+    params:
+        A (numpy array): the dense block matrix
+        n (int): how many blocks to repeat
+
+    return:
+        (numpy array): the constructed block diagonal matrix
+    """
+
+    return np.kron(np.eye(n), A)
+
+
+# def linop_diff_h(sz):
+#     """
+#     construct a linear differential operator
+#
+#     params:
+#         sz (tuple): size of the matrix
+#
+#     return:
+#         op (): TODO
+#     """
+#     n1, n2 = sz[0], sz[1]
+#     mat =

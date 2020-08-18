@@ -24,5 +24,11 @@ class TestUtils(unittest.TestCase):
                                                 [3, 6, 9, 6, 12, 18, 9, 18, 27]]))
 
 
+    def test_nblockDiag(self):
+        a = np.array([[1, 2], [3, 4]])
+        assert_equal(nBlockDiag(a, 2), np.array([[1, 2, 0, 0], [3, 4, 0, 0], \
+                                                 [0, 0, 1, 2], [0, 0, 3, 4]]))
+
+
 if __name__ == "__main__":
     unittest.main()
