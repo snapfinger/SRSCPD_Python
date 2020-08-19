@@ -1,8 +1,10 @@
 import unittest
 import numpy as np
 from numpy.testing import assert_equal
+from numpy.testing import assert_almost_equal
 
 from utils import *
+from morlet import *
 
 
 class TestUtils(unittest.TestCase):
@@ -28,6 +30,17 @@ class TestUtils(unittest.TestCase):
         a = np.array([[1, 2], [3, 4]])
         assert_equal(nBlockDiag(a, 2), np.array([[1, 2, 0, 0], [3, 4, 0, 0], \
                                                  [0, 0, 1, 2], [0, 0, 3, 4]]))
+
+
+class TestTransform(unittest.TestCase):
+    def test_morlet(self):
+        opt = cMorletTransformS()
+        testdata1 = np.array([[10, 12, 13], [24, 25, 26]])
+        testtime1 = np.array([1, 2, 3])
+        M1, timeDs1 = cMorletTransformS(testdata1, testtime1, opt)
+        assert_equal(timeDs1, np.array([1, 2, 3]))
+        assert_almost_equal(M1[:, :, 9], np.array([[.0100, .0115, .0078], [.0227, .0236, .0156]]), decimal=4)
+        assert_almost_equal(M1[:, :, 99], np.array([[.0105, .0126, .0137], [.0252, .0263, .0273]]), decimal=4)
 
 
 if __name__ == "__main__":

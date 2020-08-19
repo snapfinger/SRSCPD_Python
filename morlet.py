@@ -43,10 +43,10 @@ def cMorletTransformS(data=None, time=None, option=None):
 
         return option
 
-    freqs = option['freqs']
-    fc = option['fc']
-    fwhm = option['fwhm']
-    dsRate = option['dsRate']
+    freqs = option['freqs'].astype(np.float32)
+    fc = float(option['fc'])
+    fwhm = float(option['fwhm'])
+    dsRate = int(option['dsRate'])
     mode = option['mode']
 
     # interval between time points
@@ -85,6 +85,6 @@ def cMorletTransformS(data=None, time=None, option=None):
         M = np.sqrt(np.abs(M)**2)
 
     M = np.swapaxes(M, 1, 2)
-    timeDs = time[0: len(time): 2]
+    timeDs = time[0::dsRate]
 
     return M, timeDs

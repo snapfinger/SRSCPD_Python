@@ -9,6 +9,7 @@ import numpy as np
 import h5py
 
 from visualize import *
+from morlet import *
 
 
 R = 5;
@@ -32,16 +33,26 @@ with h5py.File(data_path, 'r') as file:
 
     xAxis = file[xAxis_ref]
     xAxis_dict = {}
-    xAxis_dict['t'] = np.array(file[xAxis[1, 0]]).T
-    xAxis_dict['freq'] = np.array(file[xAxis[2, 0]]).T
+    xAxis_dict['t'] = np.squeeze(file[xAxis[1, 0]])
+    xAxis_dict['freq'] = np.squeeze(file[xAxis[2, 0]])
 
-# print(UGT_dict['Channel'].shape)
-# print(UGT_dict['Time'].shape)
-# print(UGT_dict['Spectrum'].shape)
+    t = xAxis_dict['t']
+    freq = xAxis_dict['freq']
 
-print(xAxis_dict['t'].shape)
-plotTensorComponents(UGT_dict, xAxis_dict, "")
 
+# --------------- --------- data plotting ------------------------
+# plotTensorComponents(UGT_dict, xAxis_dict, "")
 # plt.imshow(Xn, cmap="gray")
 # plt.axis('off')
 # plt.show()
+
+
+# --------------- calculate the Morlet wavelet --------------------
+option = cMorletTransformS()
+option['fc'] = 1.0
+option['fwhm'] = 2.0
+option['mode'] = 'power'
+option['freqs'] = freq
+
+TF, tReturn = cMorletTransformS(Xn, t, option)
+print(TF[50, 50, 50])
