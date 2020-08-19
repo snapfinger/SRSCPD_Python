@@ -35,7 +35,11 @@ def cMorletTransformS(data=None, time=None, option=None):
     """
     if not option:
         option = {}
-        option['freqs'] = np.arange(1, )
+        option['freqs'] = np.arange(1, 101, 1)
+        option['fc'] = 1
+        option['fwhm'] = 3
+        option['dsRate'] = 1
+        option['mode'] = 'envelope'
 
         return option
 
@@ -63,10 +67,10 @@ def cMorletTransformS(data=None, time=None, option=None):
     numChns = data.shape[0]
     numT = data.shape[1]
     numDsT = len(np.arange(1, numT + 1, dsRate))
-    M = np.zeros((numChns, numSc, numDsT))
+    M = np.zeros((numChns, numSc, numDsT), dtype=complex)
 
     for n in range(numSc):
-        tempKernel = morletKernel(n)
+        tempKernel = morletKernel[n]
 
         for m in range(numChns):
             u = data[m, :]
