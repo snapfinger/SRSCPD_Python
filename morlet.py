@@ -7,7 +7,7 @@ PI = math.pi
 def cMorletWavelet(t, fc, sigma):
     """
     params:
-        t (numpy array): time axis
+        t (1d numpy array): time axis
         fc (float): center frequency
         sigma (float): gassian sigma
 
