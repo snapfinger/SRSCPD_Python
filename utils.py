@@ -13,7 +13,6 @@ def matricize(X, n):
         Xn (numpy array): the matricized tensor X (a matrix)
 
     """
-
     N = X.ndim
     if n < 0 or n >= N:
         raise ValueError("mode error")
@@ -77,7 +76,6 @@ def cpFull(U, lambda_, isLimitedMem=True):
         Y = np.zeros(sz)
 
         for m in range(R):
-
             T = U[0][:, m]
             if T.ndim == 1:
                 T = np.reshape(T, (T.shape[0], 1))
