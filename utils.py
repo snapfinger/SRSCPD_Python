@@ -93,7 +93,6 @@ def cpFull(U, lambda_, isLimitedMem=True):
     else:
         Y = np.reshape(np.matmul(KrProd(U[::-1]), lambda_), sz, order='F')
 
-
     return Y
 
 
