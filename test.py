@@ -32,6 +32,25 @@ class TestUtils(unittest.TestCase):
                                                  [0, 0, 1, 2], [0, 0, 3, 4]]))
 
 
+    def test_cpFull(self):
+        U = [np.array([[0.38631935, 0.38631606], [0.92236509, 0.92236647]]), \
+             np.array([[0.42866664, 0.42866762], [0.56630685, 0.56630698], [0.70394705, 0.70394635]]), \
+             np.array([[0.26726112, 0.26726136], [0.53452262, 0.53452235], [0.80178367, 0.80178378]])]
+
+        lambs = np.array([[17.78789995], [17.78789995]])
+        # test saveMemory option
+        out1 = cpFull(U, lambs, True)
+        assert_almost_equal(out1[:, :, 0], np.array([[1.5745, 2.0801, 2.5857], [3.7594, 4.9664, 6.1735]]), decimal=4)
+        assert_almost_equal(out1[:, :, 1], np.array([[3.1491, 4.1602, 5.1714], [7.5187, 9.9329, 12.3471]]), decimal=4)
+        assert_almost_equal(out1[:, :, 2], np.array([[4.7236, 6.2403, 7.7570], [11.2781, 14.8993, 18.5206]]), decimal=4)
+
+        # test w/o saveMemory option
+        out2 = cpFull(U, lambs, False)
+        assert_almost_equal(out2[:, :, 0], np.array([[1.5745, 2.0801, 2.5857], [3.7594, 4.9664, 6.1735]]), decimal=4)
+        assert_almost_equal(out2[:, :, 1], np.array([[3.1491, 4.1602, 5.1714], [7.5187, 9.9329, 12.3471]]), decimal=4)
+        assert_almost_equal(out2[:, :, 2], np.array([[4.7236, 6.2403, 7.7570], [11.2781, 14.8993, 18.5206]]), decimal=4)
+
+
 class TestTransform(unittest.TestCase):
     def test_morlet(self):
         opt = cMorletTransformS()
