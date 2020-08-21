@@ -1,13 +1,13 @@
 import numpy as np
 
-from cpALS import *
+from cpALS import cpALS
 from utils import *
 
 
-def srscpd(TS=None, R=None, option={}):
+def srscpd(TS=None, R=None, option=None):
     """
     SRSCPD framework
-    
+
     params:
         TS (numpy array): tensor
         R (int): desired rank
@@ -17,7 +17,7 @@ def srscpd(TS=None, R=None, option={}):
         result (dictionary): decomposition results from rank 1 to R
     """
     # TODO: expand, now just perform with ALS
-    if not option:
+    if option is None:
         option = {}
         option['isStats'] = False
         option['maxNumFitRes'] = 10
@@ -27,20 +27,20 @@ def srscpd(TS=None, R=None, option={}):
         option['alg'] = 'als'
         option['optAlg'] = cpALS()
 
-        optALS = option['optAlg']
-        if option['alg'] == 'als':
-            optALS['printItv'] = optAlg['printItv']
-            optALS['maxNumItr'] = optAlg['maxNumItr']
-            optALS['cacheMTS'] = optAlg['cacheMTS']
-        else:
-            raise ValueError("To be implemented")
+        # if option['alg'] == 'als':
+        #     optALS['printItv'] = optALS['printItv']
+        #     optALS['maxNumItr'] = optAlg['maxNumItr']
+        #     optALS['cacheMTS'] = optAlg['cacheMTS']
+        # else:
+        #     raise ValueError("To be implemented")
 
-        optALS['nonnegative'] = optAlg['nonnegative']
-        optALS['init'] = optAlg['init']
-
-        if not option['isVerbose']: optALS['printItv'] = 0
+        # optALS['nonnegative'] = optAlg['nonnegative']
+        # optALS['init'] = optAlg['init']
 
         return option
+
+    optALS = option['optAlg']
+    if not option['isVerbose']: optALS['printItv'] = 0
 
     isStats = option['isStats']
     maxNumFitRes = option['maxNumFitRes']
