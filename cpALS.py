@@ -1,5 +1,5 @@
 import numpy as np
-import scipy
+import scipy.io
 import copy
 from subprocess import call
 
@@ -94,19 +94,19 @@ def cpALS(TS=None, R=None, option={}):
     else:
         itrDims = option['itrDims']
 
-    if not option['const']:
+    if not len(option['const']):
         option['const'] = np.zeros((N, 1))
     else:
         if len(option['const']) != N:
             raise ValueError("regularization type dimension mismatches the data")
 
-    if not option['regParam']:
+    if not len(option['regParam']):
         option['regParam'] = np.zeros((N, 1))
     else:
         if len(option['regParam']) != N:
             raise ValueError("regularization parameter dimension mismatches the data")
 
-    if not option['nonnegative']:
+    if not len(option['nonnegative']):
         option['nonnegative'] = np.zeros((N, 1), dtype=bool)
     else:
         if len(option['nonnegative']) != N:
