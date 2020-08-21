@@ -17,7 +17,7 @@ def cpALS(TS=None, R=None, option={}):
 
     return:
         U (list of numpy arrays): the componetns
-        lambda (numpy array): scale corresponding to the components
+        lambda (numpy array): scales corresponding to the components
         output (dictionary): record of algo related info
     """
     if not option:
