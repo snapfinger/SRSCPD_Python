@@ -119,19 +119,8 @@ def srscpd(TS=None, R=None, option=None):
             print("n:", n)
             a = U[n]
             b = URes[n]
-            print("a shape", a.shape)
-            print("b shape", b.shape)
-            print("lamb shape:", lamb.shape)
-            print("lambdaRes shape:", lambdaRes.shape)
-            print("c shape", np.multiply(lamb, 1/N).shape)
-            print("c_T shape", np.multiply(lamb,  1/N).T.shape)
-            print("np.multiply(lambdaRes, 1/N).T shape", np.multiply(lambdaRes, 1/N).T.shape)
-
-            part1 = a * np.multiply(lamb, 1/N).T
-            part2 = b * np.multiply(lambdaRes, 1/N).T
-            print("p1 shape: ", part1.shape)
-            print("p2 shape: ", part2.shape)
-
+            part1 = a * (lamb ** (1/N)).T
+            part2 = b * (lambdaRes ** (1/N)).T
             UInit.append(np.hstack((part1, part2)))
 
         # fit rank-r tensor
@@ -152,7 +141,7 @@ def srscpd(TS=None, R=None, option=None):
         # stats TODO
 
         # compute residue
-        TSRes = TS - cpFull(U, lamb)
+        TSRes = TS - cpFull(U, lamb, False)
 
     print("result len:", len(result))
 
