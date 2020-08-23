@@ -72,11 +72,16 @@ def cpALS(TS=None, R=None, option={}):
     np.random.seed(1337)
 
     # init set
-    # TODO: add other choice of init (e.g. use SVD), now it's just random init
-    UInit = [[] for i in range(N)]
-    for m in range(N):
-        # UInit[m] = np.random.rand(TS.shape[m], R)
-        UInit[m] = np.random.rand(R, TS.shape[m]).T # so to generate same random matrix as matlba
+    if isinstance(option['init'], str):
+        # specify init method
+        # TODO: add other choice of init (e.g. use SVD), now it's just random init
+        UInit = [[] for i in range(N)]
+        for m in range(N):
+            # UInit[m] = np.random.rand(TS.shape[m], R)
+            UInit[m] = np.random.rand(R, TS.shape[m]).T # so to generate same random matrix as matlba
+    else:
+        # or with specified input
+        UInit = option['init']
 
     if option['cacheMTS']:
         MTS = [[] for i in range(N)]
@@ -166,6 +171,7 @@ def cpALS(TS=None, R=None, option={}):
             X = np.reshape(X2, (R, sz[n]), order='F')
             lamb = np.sqrt(np.diag(np.matmul(X, X.T)))
             lamb = np.reshape(lamb, (lamb.shape[0], 1), order='F')
+            # lamb = np.reshape(lamb, (lamb.shape[0], 1))
             X = np.divide(X, lamb)
 
             U[n] = X.T
