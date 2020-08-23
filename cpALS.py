@@ -2,6 +2,7 @@ import numpy as np
 import scipy.io
 import copy
 from subprocess import call
+import os
 
 from utils import *
 
@@ -157,7 +158,8 @@ def cpALS(TS=None, R=None, option={}):
             # TODO: now enforces nonnegativity,
             # in the future includes the one w/o this constraint
             scipy.io.savemat("var.mat", mdict={'A2': A2, 'B2':B2, 'x0':x0})
-            call(["matlab",  "-nodisplay", "-r", "TFOCS_LS(); exit;"])
+            # call(["matlab",  "-nodisplay", "-nosplash", "-r", "TFOCS_LS(); exit;"])
+            os.system('matlab -nojvm -nodisplay -nosplash -r "TFOCS_LS;quit;"')
             tfocs_res_mat = scipy.io.loadmat("tfocs_rst.mat")
             X2 = tfocs_res_mat['X2']
 
@@ -178,14 +180,14 @@ def cpALS(TS=None, R=None, option={}):
 
         if isFC: FC[m] = facCvg
 
-        if printItv and ((m <= 5) or (m % printItv == 0)):
-            print("Iter%d: eps = %.3e\n" % (m, facCvg))
+        if printItv and ((m <= 4) or ((m + 1) % printItv == 0)):
+            print("Iter%d: eps = %.3e\n" % (m + 1, facCvg))
 
-        if (m > 2) and (facCvg < option['tol']):
+        if (m > 1) and (facCvg < option['tol']):
             break
 
     if printItv > 0:
-        if m == maxNumItr:
+        if (m + 1) == maxNumItr:
             print("reached the max number of iterations")
             print("eps = %.3e\n", facCvg)
 
