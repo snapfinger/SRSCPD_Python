@@ -1,4 +1,5 @@
 import numpy as np
+import json
 
 from cpALS import cpALS
 from utils import *
@@ -27,26 +28,17 @@ def srscpd(TS=None, R=None, option=None):
         option['alg'] = 'als'
         option['optAlg'] = cpALS()
 
-        # if option['alg'] == 'als':
-        #     optALS['printItv'] = optALS['printItv']
-        #     optALS['maxNumItr'] = optAlg['maxNumItr']
-        #     optALS['cacheMTS'] = optAlg['cacheMTS']
-        # else:
-        #     raise ValueError("To be implemented")
-
-        # optALS['nonnegative'] = optAlg['nonnegative']
-        # optALS['init'] = optAlg['init']
-
         return option
 
     optALS = option['optAlg']
-    if not option['isVerbose']: optALS['printItv'] = 0
 
     isStats = option['isStats']
     maxNumFitRes = option['maxNumFitRes']
     isVerbose = option['isVerbose']
     rank1Method = option['rank1Method']
     rank1Init = option['rank1Init']
+
+    if not isVerbose: optALS['printItv'] = 0
 
     # ------------- start SRSCPD -------------
     result = []
@@ -61,7 +53,7 @@ def srscpd(TS=None, R=None, option=None):
 
     # refit if failed
     c = 1
-    while ((not output['Flag']) and (c < maxNumFitRes)):
+    while (not output['Flag']) and (c < maxNumFitRes):
         c += 1
         if isVerbose: print("R=1 decomposition failed, try again (%s)" % c)
         if rank1Method == "als":
@@ -88,8 +80,10 @@ def srscpd(TS=None, R=None, option=None):
 
     # iterate over the rest of the ranks
     N = len(U)
+    print("N: ", N)
 
-    for m in range(1, R):
+    for m in range(2, R + 1):
+        print("m:", m)
         if isVerbose: print("Start fitting rank-1 tensor to residue as part of warm start...")
 
         # TODO: now only init rank1 using random in ALS, extend optiosn in the future
@@ -116,17 +110,29 @@ def srscpd(TS=None, R=None, option=None):
             if isVerbose: print("Still could not find good init, just use random")
             URes = []
             for n in range(N):
-                URes.append(np.random.rand(1, TS.shape[n]).T) # so to generate same random matrix as matlba)
+                URes.append(np.random.rand(1, TS.shape[n]).T) # so to generate same random matrix as matlab)
 
         # equally spread the scale lambda to each dimension
         UInit = []
+
         for n in range(N):
+            print("n:", n)
             a = U[n]
             b = URes[n]
-            # TODO soon
-            part1 = np.tensordot(a, np.multiply(lamb,  1/N).T)
-            part2 = np.tensordot(b, np.multiply(lambdaRes, 1/N).T)
-            UInit.append(np.hstack(part1, part2))
+            print("a shape", a.shape)
+            print("b shape", b.shape)
+            print("lamb shape:", lamb.shape)
+            print("lambdaRes shape:", lambdaRes.shape)
+            print("c shape", np.multiply(lamb, 1/N).shape)
+            print("c_T shape", np.multiply(lamb,  1/N).T.shape)
+            print("np.multiply(lambdaRes, 1/N).T shape", np.multiply(lambdaRes, 1/N).T.shape)
+
+            part1 = a * np.multiply(lamb, 1/N).T
+            part2 = b * np.multiply(lambdaRes, 1/N).T
+            print("p1 shape: ", part1.shape)
+            print("p2 shape: ", part2.shape)
+
+            UInit.append(np.hstack((part1, part2)))
 
         # fit rank-r tensor
         if isVerbose: print("Fit rank %s tensor" % m)
@@ -147,5 +153,10 @@ def srscpd(TS=None, R=None, option=None):
 
         # compute residue
         TSRes = TS - cpFull(U, lamb)
+
+    print("result len:", len(result))
+
+    # with open('result_srscpd', 'w') as fout:
+    #     json.dump(result, fout)
 
     return result
