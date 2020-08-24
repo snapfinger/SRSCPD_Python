@@ -9,7 +9,8 @@ import numpy as np
 import h5py
 
 from visualize import *
-from morlet import *
+from morlet import cMorletWavelet, cMorletTransformS
+from srscpd import srscpd
 
 
 R = 5;
@@ -55,4 +56,15 @@ option['mode'] = 'power'
 option['freqs'] = freq
 
 TF, tReturn = cMorletTransformS(Xn, t, option)
-print(TF[50, 50, 50])
+
+
+# --------------- CP decomposition using SRSCPD --------------------
+option = srscpd()
+option['isStats'] = False
+option['optAlg']['nonnegative'] = [True, True, True]
+result = srscpd(TF, R, option)
+
+
+#%% -------------------- plot the results ----------------------------
+U = result[R - 1]['U']
+plotTensorComponents(U)
