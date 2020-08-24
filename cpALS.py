@@ -1,7 +1,6 @@
 import numpy as np
 import scipy.io
 import copy
-from subprocess import call
 import os
 
 from utils import *
@@ -148,8 +147,6 @@ def cpALS(TS=None, R=None, option={}):
             A = np.prod(V[:, :, idx], axis=2)
 
             if option['cacheMTS']:
-                cur_MTS = MTS[n]
-                cur_krprod = KrProd([U[i] for i in idx[::-1]])
                 B = np.matmul(MTS[n], KrProd([U[i] for i in idx[::-1]])).T
             else:
                 B = np.matmul(matricize(TS, n), KrProd([U[i] for i in idx[::-1]])).T

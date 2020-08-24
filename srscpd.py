@@ -1,5 +1,4 @@
 import numpy as np
-import json
 
 from cpALS import cpALS
 from utils import *
@@ -144,8 +143,5 @@ def srscpd(TS=None, R=None, option=None):
         TSRes = TS - cpFull(U, lamb, False)
 
     print("result len:", len(result))
-
-    # with open('result_srscpd', 'w') as fout:
-    #     json.dump(result, fout)
 
     return result

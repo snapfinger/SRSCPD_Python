@@ -4,12 +4,11 @@ This demo shows the simulation example reported in
 [2] J. Li, et al. "Robust tensor decomposition of resting brain networks in stereotactic EEG", IEEE 51st Asilomar Conference on Signal, System and Computers, Pacfic Grove, CA, 2017.
 """
 
-import matplotlib.pyplot as plt
 import numpy as np
 import h5py
 
 from visualize import *
-from morlet import cMorletWavelet, cMorletTransformS
+from morlet import cMorletTransformS
 from srscpd import srscpd
 
 
