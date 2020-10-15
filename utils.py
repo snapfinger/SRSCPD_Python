@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.linalg as LA
 
 
 def matricize(X, n):
@@ -53,6 +54,27 @@ def KrProd(U):
     return KR
 
 
+def tsFroNorm(X, mode=1):
+	"""
+	Frobenius norm (or square) of the tensor (N-D supported)
+	Args:
+		X (numpy array): the full tensor
+		mode (int): 1 for norm, 2 for squared norm
+	Returns:
+		fbn (float): (squared) frobenius norm
+	"""
+	X2 = np.reshape(X, (X.size, 1))
+
+	if mode == 1:
+		fbn = np.sqrt(np.dot(X2.T, X2))
+	elif mode == 2:
+		fbn = np.dot(X2.T, X2)
+	else:
+		raise ValueError("Incorrect mode input")
+
+	return fbn[0][0]
+
+
 def cpFull(U, lambda_, isLimitedMem=True):
     """
     Reconstruct the full tensor based on the components (N-D)
@@ -94,6 +116,34 @@ def cpFull(U, lambda_, isLimitedMem=True):
     return Y
 
 
+def cpDiff(X, U, lamb):
+	"""
+	Calculate the difference between tensor and approximations (N-D supported)
+	Args:
+		X: (numpy array) the full tensor
+		U: (list of numpy arrays) the decomposed components
+		lamb: ()
+	Returns:
+		df (float):
+		err (float):
+		rela_err (float):
+	"""
+	U_tmp = [U[i].copy() for i in range(len(U))]
+	N = len(U_tmp)
+	Xnorm = tsFroNorm(X)
+	lmd2 = lamb ** (1/N)
+	for m in range(N):
+		U_tmp[m] *= lmd2.T
+
+	A = matricize(X, 0) - np.matmul(U_tmp[0], KrProd(U_tmp[len(U_tmp)-1: 0: -1]).T)
+	df = LA.norm(A, 'fro')
+
+	rela_err = df / Xnorm
+	varExp = 1 - rela_err ** 2
+
+	return df, rela_err, varExp
+
+
 # TODO: include option of using sparse matrix representation
 def nBlockDiag(A, n):
     """
@@ -108,17 +158,3 @@ def nBlockDiag(A, n):
     """
 
     return np.kron(np.eye(n), A)
-
-
-# TODO
-def linop_diff_h(sz):
-    """
-    construct a linear differential operator
-
-    params:
-        sz (tuple): size of the matrix
-
-    return:
-        op (): TODO
-    """
-    pass
