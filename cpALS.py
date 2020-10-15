@@ -1,12 +1,10 @@
 import numpy as np
-import scipy.io
 import copy
-import os
 
-from utils import *
+from utils import matricize, KrProd, cpDiff
 
 
-def cpALS(TS=None, R=None, option={}):
+def cpALS(TS=None, R=None, option=None):
     """
     Alternating least sqaure (ALS) algorithm for CP decomposition
 
@@ -21,50 +19,27 @@ def cpALS(TS=None, R=None, option={}):
         output (dictionary): record of algo related info
     """
     if not option:
-        option['init'] = 'random'
-        option['firstItrDims'] = []
-        # the overall iterating dimensions
-        # (fixed dimensions should be the complement of this set from the whole set 0:N-1)
-        option['itrDims'] = []
-        # convergence criterion
-        option['tol'] = 1e-5
-        option['maxNumItr'] = 100
-        # whether to cache the matricized tensor or not
-        # caching will speed up the computation but require more memory
-        option['cacheMTS'] = True
-        # constrained dim
-        # 0: no constraint, 1: smoothness, 2:sparseness, 3: TV
-        option['const'] = []
-        # regularization params for each dim
-        option['regParam'] = []
-        # non-negative constraint
-        option['nonnegative'] = []
-        # if output the history of cost func. value
-        option['isCostFV'] = False
-        # if output the history of the convergence
-        option['isFC'] = False
-        # print every #printItv, the first 5 iters always printed
-        option['printItv'] = 10
-
-        # settings for TFOCS
-        option['epsHuber'] = 1e-3
-
-        optTFOCS = {}
-        optTFOCS['tol'] = 1e-6
-        optTFOCS['restart'] = 5
-        optTFOCS['maxIts'] = 100
-        optTFOCS['alg'] = 'AT'
-        optTFOCS['printEvery'] = 0
-        optTFOCS['debug'] = False
-        option['optTFOCS'] = optTFOCS
-
-        lamb = []
-        output = []
+        option = {'init': 'random',
+                  'firstItrDims': [],
+                  # the overall iterating dimensions
+                  # (fixed dimensions should be the complement of this set from the whole set 0:N-1)
+                  'itrDims': [],
+                  # convergence criterion
+                  'tol': 1e-5,
+                  'maxNumItr': 100,
+                  # whether to cache the matricized tensor or not
+                  # caching will speed up the computation but require more memory
+                  'cacheMTS': True,
+                  # non-negative constraint
+                  'nonnegative': [],
+                  # if output the history of cost function value
+                  'isFC': False,
+                  # print every #printItv, the first 5 iters always printed
+                  'printItv': 10}
 
         return option
 
     # get dimensions for init
-    sz = TS.shape
     N = TS.ndim
 
     # to check with matlab version
@@ -72,12 +47,10 @@ def cpALS(TS=None, R=None, option={}):
 
     # init set
     if isinstance(option['init'], str):
-        # specify init method
         # TODO: add other choice of init (e.g. use SVD), now it's just random init
-        UInit = [[] for i in range(N)]
-        for m in range(N):
-            # UInit[m] = np.random.rand(TS.shape[m], R)
-            UInit[m] = np.random.rand(R, TS.shape[m]).T # so to generate same random matrix as matlba
+        # transpose so to generate same random matrix as matlab
+        UInit = [np.random.rand(R, TS.shape[m]).T  for m in range(N)]
+        # UInit = [np.random.rand(TS.shape[m], R) for m in range(N)]
     else:
         # or with specified input
         UInit = option['init']
@@ -99,18 +72,6 @@ def cpALS(TS=None, R=None, option={}):
     else:
         itrDims = option['itrDims']
 
-    if not len(option['const']):
-        option['const'] = np.zeros((N, 1))
-    else:
-        if len(option['const']) != N:
-            raise ValueError("regularization type dimension mismatches the data")
-
-    if not len(option['regParam']):
-        option['regParam'] = np.zeros((N, 1))
-    else:
-        if len(option['regParam']) != N:
-            raise ValueError("regularization parameter dimension mismatches the data")
-
     if not len(option['nonnegative']):
         option['nonnegative'] = np.zeros((N, 1), dtype=bool)
     else:
@@ -119,18 +80,13 @@ def cpALS(TS=None, R=None, option={}):
 
     # init params
     maxNumItr = option['maxNumItr']
-    const = option['const']
-    mu = option['regParam']
-    epsHuber = option['epsHuber']
 
-    isCostFV = option['isCostFV']
     isFC = option['isFC']
     printItv = option['printItv']
 
     # start ALS
     U = UInit
 
-    if isCostFV: CostFV = np.zeros((maxNumItr, 1))
     if isFC: FC = np.zeros((maxNumItr, 1))
 
     V = np.zeros((R, R, N))
@@ -138,7 +94,7 @@ def cpALS(TS=None, R=None, option={}):
         V[:, :, m] = np.matmul(np.array(U[m]).T, np.array(U[m]))
 
     for m in range(maxNumItr):
-        UOld = copy.deepcopy(U);
+        UOld = copy.deepcopy(U)
 
         # iterate over modes specified for first iter
         for n in firstItrDims:
@@ -151,24 +107,12 @@ def cpALS(TS=None, R=None, option={}):
             else:
                 B = np.matmul(matricize(TS, n), KrProd([U[i] for i in idx[::-1]])).T
 
-            # TODO: no regularization options for now, include in the future
-            A2 = nBlockDiag(A, sz[n])
-            B2 = np.reshape(B, (B.size, 1), order='F')
-            x0 = U[n].T
-            x0 = np.reshape(x0, (x0.size, 1), order='F')
+            X = np.matmul(np.linalg.pinv(A), B)
+            if n >= 0:
+                X[X < 0] = 0
 
-            # TODO: now enforces nonnegativity,
-            # in the future includes the one w/o this constraint
-            scipy.io.savemat("var.mat", mdict={'A2': A2, 'B2':B2, 'x0':x0})
-            # call(["matlab",  "-nodisplay", "-nosplash", "-r", "TFOCS_LS(); exit;"])
-            os.system('matlab -nojvm -nodisplay -nosplash -r "TFOCS_LS;quit;"')
-            tfocs_res_mat = scipy.io.loadmat("tfocs_rst.mat")
-            X2 = tfocs_res_mat['X2']
-
-            X = np.reshape(X2, (R, sz[n]), order='F')
             lamb = np.sqrt(np.diag(np.matmul(X, X.T)))
             lamb = np.reshape(lamb, (lamb.shape[0], 1), order='F')
-            # lamb = np.reshape(lamb, (lamb.shape[0], 1))
             X = np.divide(X, lamb)
 
             U[n] = X.T
@@ -184,21 +128,23 @@ def cpALS(TS=None, R=None, option={}):
         if isFC: FC[m] = facCvg
 
         if printItv and ((m <= 4) or ((m + 1) % printItv == 0)):
-            print("Iter%d: eps = %.3e\n" % (m + 1, facCvg))
+            print("Iter%d: eps = %.3e" % (m + 1, facCvg))
+
+        firstItrDims = itrDims
 
         if (m > 1) and (facCvg < option['tol']):
             break
+
+    dfFro, _, EV = cpDiff(TS, U, lamb)
 
     if printItv > 0:
         if (m + 1) == maxNumItr:
             print("reached the max number of iterations")
             print("eps = %.3e\n", facCvg)
+        else:
+            print("f = %.3f, eps = %.3e  EV = %.2f\n" % (dfFro**2, facCvg, EV))
 
-            # TODO: add dfFRo, EV
-            # print("f = %.3f, eps = %.3e  EV = %.2f\n", dfFro^2, facCvg, EV))
-
-    output = {}
-    output['Flag'] = True
-    output['numItr'] = m + 1
+    output = {'Flag': True,
+              'numItr': m + 1}
 
     return U, lamb, output
