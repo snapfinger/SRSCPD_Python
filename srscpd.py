@@ -1,5 +1,3 @@
-import numpy as np
-
 from cpALS import cpALS
 from utils import *
 
@@ -16,22 +14,19 @@ def srscpd(TS=None, R=None, option=None):
     return:
         result (dictionary): decomposition results from rank 1 to R
     """
-    # TODO: expand, now just perform with ALS
     if option is None:
-        option = {}
-        option['isStats'] = False
-        option['maxNumFitRes'] = 10
-        option['isVerbose'] = True
-        option['rank1Method'] = 'als'
-        option['rank1Init'] = 'random'
-        option['alg'] = 'als'
-        option['optAlg'] = cpALS()
+        option = {'maxNumFitRes': 10,
+                  'isVerbose': True,
+                  'rank1Method': 'als',
+                  'rank1Init': 'random',
+                  'alg': 'als',
+                  'optAlg': cpALS()
+                }
 
         return option
 
     optALS = option['optAlg']
 
-    isStats = option['isStats']
     maxNumFitRes = option['maxNumFitRes']
     isVerbose = option['isVerbose']
     rank1Method = option['rank1Method']
@@ -65,27 +60,21 @@ def srscpd(TS=None, R=None, option=None):
         if isVerbose: print("Still failed to fit the first rank-1 tensor, quit")
         return
 
-    dict = {}
-    dict['U'] = U
-    dict['Lambda'] = lamb
-    dict['Output'] = output
-    result.append(dict)
+    rst_dict = {'U': U,
+                'Lambda': lamb,
+                'Output': output}
+    result.append(rst_dict)
 
-    # TODO: calculate stats if needed
-    if isStats: pass
-
-    # compute the residue
+    # compute the residual
     TSRes = TS - cpFull(U, lamb, False)
 
     # iterate over the rest of the ranks
     N = len(U)
-    print("N: ", N)
 
     for m in range(2, R + 1):
-        print("m:", m)
         if isVerbose: print("Start fitting rank-1 tensor to residue as part of warm start...")
 
-        # TODO: now only init rank1 using random in ALS, extend optiosn in the future
+        # TODO: now only init rank1 using random in ALS, extend options in the future
         optALS["init"] = rank1Init
 
         if rank1Method == "als":
@@ -107,15 +96,13 @@ def srscpd(TS=None, R=None, option=None):
         # just use random if still failed
         if not output['Flag']:
             if isVerbose: print("Still could not find good init, just use random")
-            URes = []
-            for n in range(N):
-                URes.append(np.random.rand(1, TS.shape[n]).T) # so to generate same random matrix as matlab)
+            # tranpose so to generate same random matrix as matlab with this random seeed
+            URes = [np.random.rand(1, TS.shape[n]).T for n in range(N)]
 
         # equally spread the scale lambda to each dimension
         UInit = []
 
         for n in range(N):
-            print("n:", n)
             a = U[n]
             b = URes[n]
             part1 = a * (lamb ** (1/N)).T
@@ -131,17 +118,12 @@ def srscpd(TS=None, R=None, option=None):
 
         U, lamb, output = cpALS(TS, m, optAlg2)
 
-        cur_dict = {}
-        cur_dict['U'] = U
-        cur_dict['Lambda'] = lamb
-        cur_dict['Output'] = output
+        cur_dict = {'U': U,
+                    'Lambda': lamb,
+                    'Output': output}
         result.append(cur_dict)
-
-        # stats TODO
 
         # compute residue
         TSRes = TS - cpFull(U, lamb, False)
-
-    print("result len:", len(result))
 
     return result
