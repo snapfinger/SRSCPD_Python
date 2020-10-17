@@ -7,15 +7,15 @@ This demo shows the simulation example reported in
 import numpy as np
 import h5py
 
-from visualize import *
+from visualize import plotTensorComponents
 from morlet import cMorletTransformS
 from srscpd import srscpd
 
 
-R = 5;
+R = 5
 
 # --------------- --------- data loading ---------------------------
-data_path = "/hd2/research/brain/time_series/my_SRSCPD_ALS/data.mat"
+data_path = "data.mat"
 with h5py.File(data_path, 'r') as file:
     X_ref = file['data'][0, 0]
     Xn_ref = file['data'][1, 0]
@@ -32,20 +32,14 @@ with h5py.File(data_path, 'r') as file:
     UGT_dict['Spectrum'] = np.array(file[UGT[2, 0]]).T
 
     xAxis = file[xAxis_ref]
-    xAxis_dict = {}
-    xAxis_dict['t'] = np.squeeze(file[xAxis[1, 0]])
-    xAxis_dict['freq'] = np.squeeze(file[xAxis[2, 0]])
+    xAxis_list = [np.squeeze(file[xAxis[i, 0]]) for i in range(3)]
 
-    t = xAxis_dict['t']
-    freq = xAxis_dict['freq']
+    t = xAxis_list[1]
+    freq = xAxis_list[2]
 
 
-# --------------- --------- data plotting ------------------------
-# plotTensorComponents(UGT_dict, xAxis_dict, "")
-# plt.imshow(Xn, cmap="gray")
-# plt.axis('off')
-# plt.show()
-
+#%% --------------- --------- data plotting ------------------------
+plotTensorComponents(UGT_dict, xAxis_list)
 
 # --------------- calculate the Morlet wavelet --------------------
 option = cMorletTransformS()
@@ -66,4 +60,4 @@ result = srscpd(TF, R, option)
 
 #%% -------------------- plot the results ----------------------------
 U = result[R - 1]['U']
-plotTensorComponents(U)
+plotTensorComponents(U, xAxis_list)

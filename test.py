@@ -3,8 +3,8 @@ import numpy as np
 from numpy.testing import assert_equal
 from numpy.testing import assert_almost_equal
 
-from utils import *
-from morlet import *
+from utils import matricize, KrProd, nBlockDiag, cpFull
+from morlet import cMorletTransformS
 
 
 class TestUtils(unittest.TestCase):

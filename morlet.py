@@ -34,12 +34,11 @@ def cMorletTransformS(data=None, time=None, option=None):
         timeDs (1d numpy array): downsampled time points
     """
     if not option:
-        option = {}
-        option['freqs'] = np.arange(1, 101, 1)
-        option['fc'] = 1
-        option['fwhm'] = 3
-        option['dsRate'] = 1
-        option['mode'] = 'envelope'
+        option = {'freqs': np.arange(1, 101, 1),
+                  'fc': 1,
+                  'fwhm': 3,
+                  'dsRate': 1,
+                  'mode': 'envelope'}
 
         return option
 
@@ -57,7 +56,7 @@ def cMorletTransformS(data=None, time=None, option=None):
     sigma_tc = fwhm / math.sqrt(8 * math.log(2))
     sigma_t = np.divide(sigma_tc, scales)
 
-    morletKernel = [[] for i in range(numSc)]
+    morletKernel = [[] for _ in range(numSc)]
     numSigma = 4
 
     for m in range(numSc):
@@ -83,6 +82,8 @@ def cMorletTransformS(data=None, time=None, option=None):
         M = np.abs(M)**2
     elif mode == "envelope":
         M = np.sqrt(np.abs(M)**2)
+    else:
+        raise ValueError("Unrecognized mode string, check you input param!")
 
     M = np.swapaxes(M, 1, 2)
     timeDs = time[0::dsRate]
