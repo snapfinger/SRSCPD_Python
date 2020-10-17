@@ -1,4 +1,5 @@
-This is a Python implementation of the method presented in 
+### Scalable and Robust Tensor Decomposition of Spontaneous Stereotactic EEG data 
+This is a Python implementation of the Scalable and Robust Sequential Canonical Polyadic Decomposition (SRSCPD) framework presented in 
 
 - J. Li, J. P. Haldar, J. C. Mosher, D. R. Nair, J. Gonzalez-Martinez, R. M. Leahy,
 "Scalable and robust tensor decomposition of spontaneous stereotactic EEG data",
@@ -10,5 +11,27 @@ https://doi.org/10.1109/TBME.2018.2875467
 IEEE 51st Asilomar Conference on Signals, Systems and Computers, Pacific Grove, CA, Oct. 2017, pp. 1544–1548.
 https://doi.org/10.1109/ACSSC.2017.8335616
 
-
 Please cite these two papers if you use this code and/or its derivatives in your own work.
+
+##### Notes
+- Regularization yet to be implemented (PR welcome). Subproblems are simply least squares problem with no regularization, so matrix left inverse is used instead of TFOCS solver (which currently has no Python binding and has a large overhead to transfer data between Python and MATLAB) as in [ref [1]](https://doi.org/10.1109/TBME.2018.2875467). The demo code works on the simulated data as in *Sec III.B Simulation* in [ref [1]](https://doi.org/10.1109/TBME.2018.2875467).
+- The official project page with a MATLAB implementation can be found on the first author's website [here](https://silencer1127.github.io/software/SRSCPD_ALS/srscpd_als_main)
+
+##### TOOD
+- Stem plot for channel mode. Current ```matplotlib.pyplot.stem``` doesn't support multichannel data, so use ```pyplot.plot``` instead.
+
+##### Main Dependencies
+
+- python 3.6
+- numpy 1.15.1
+- scipy 1.1.0
+- h5py 2.10.0
+- matplotlib 3.3.1
+- os
+- copy
+- math
+- unittest (for module test purposes)
+
+
+##### Run
+Navigate to the code folder and do ```python demo.py```
