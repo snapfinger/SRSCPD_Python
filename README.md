@@ -13,14 +13,14 @@ https://doi.org/10.1109/ACSSC.2017.8335616
 
 Please cite these two papers if you use this code and/or its derivatives in your own work.
 
-##### Notes
+#### Notes
 - Regularization yet to be implemented (PR welcome). Subproblems are simply least squares problem with no regularization, so matrix left inverse is used instead of TFOCS solver (which currently has no Python binding and has a large overhead to transfer data between Python and MATLAB) as in [ref [1]](https://doi.org/10.1109/TBME.2018.2875467). The demo code works on the simulated data as in *Sec III.B Simulation* in [ref [1]](https://doi.org/10.1109/TBME.2018.2875467).
 - The official project page with a MATLAB implementation can be found on the first author's website [here](https://silencer1127.github.io/software/SRSCPD_ALS/srscpd_als_main)
 
-##### TOOD
+#### TODO
 - Stem plot for channel mode. Current ```matplotlib.pyplot.stem``` doesn't support multichannel data, so use ```pyplot.plot``` instead.
 
-##### Main Dependencies
+#### Main Dependencies
 
 - python 3.6
 - numpy 1.15.1
@@ -33,5 +33,5 @@ Please cite these two papers if you use this code and/or its derivatives in your
 - unittest (for module test purposes)
 
 
-##### Run
+#### Run
 Navigate to the code folder and do ```python demo.py```
